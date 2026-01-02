@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { FileText, FolderOpen, Copy, Search, Zap, Shield } from "lucide-react"
+import { FileText, FolderOpen, Copy, Search, Zap, Shield, Layers } from "lucide-react"
 import Image from "next/image"
 
 interface LandingPageProps {
@@ -32,9 +32,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       description: "Находите нужный шаблон за секунды по названию или содержимому",
     },
     {
-      icon: Zap,
-      title: "Быстрая работа",
-      description: "Сокращайте время ответа клиентам в несколько раз",
+      icon: Layers,
+      title: "Конструктор сообщений",
+      description: "Собирайте сообщение из нескольких шаблонов и своего текста",
     },
     {
       icon: Shield,
@@ -71,8 +71,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
-            Организуйте свои шаблоны в папках, находите их за секунды и копируйте одним кликом. Отвечайте клиентам
-            быстрее и качественнее.
+            Организуйте свои шаблоны в папках, собирайте сообщения в конструкторе и копируйте одним кликом. Отвечайте
+            клиентам быстрее и качественнее.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -117,8 +117,65 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 md:py-24">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-[#005bff]/10 text-[#005bff] px-3 py-1.5 rounded-full text-sm font-medium mb-4">
+                <Layers className="h-4 w-4" />
+                Новая функция
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Конструктор сообщений</h2>
+              <p className="text-muted-foreground mb-6">
+                Собирайте идеальный ответ из нескольких шаблонов. Добавляйте свой текст между блоками, меняйте порядок и
+                копируйте готовое сообщение одной кнопкой.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Комбинируйте несколько шаблонов в одно сообщение",
+                  "Добавляйте произвольный текст между блоками",
+                  "Меняйте порядок частей сообщения",
+                  "Копируйте готовый результат одним кликом",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-foreground">
+                    <div className="h-5 w-5 rounded-full bg-[#005bff]/10 flex items-center justify-center shrink-0">
+                      <div className="h-2 w-2 rounded-full bg-[#005bff]" />
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-lg">
+              <div className="space-y-3">
+                <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                  <p className="text-sm text-muted-foreground">Приветствие</p>
+                  <p className="text-sm text-foreground mt-1">
+                    Здравствуйте! Благодарим за обращение в службу поддержки.
+                  </p>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                  <p className="text-sm text-muted-foreground">Ответ по заказу</p>
+                  <p className="text-sm text-foreground mt-1">
+                    Ваш заказ уже передан в доставку и будет у вас в ближайшее время.
+                  </p>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                  <p className="text-sm text-muted-foreground">Прощание</p>
+                  <p className="text-sm text-foreground mt-1">Если у вас возникнут вопросы, мы всегда рады помочь!</p>
+                </div>
+                <Button className="w-full bg-[#005bff] hover:bg-[#004ed6] mt-2">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Скопировать сообщение
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 md:py-24 bg-muted/30 border-t border-border">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Готовы ускорить свою работу?</h2>
           <p className="text-muted-foreground mb-8">

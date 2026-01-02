@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback } from "react"
-import { Menu, LogOut, Loader2, X } from "lucide-react"
+import { Menu, LogOut, Loader2, X, FileText, Layers } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FolderTree } from "./folder-tree"
 import { TemplateList } from "./template-list"
@@ -11,6 +11,7 @@ import { SearchBar } from "./search-bar"
 import { ThemeToggle } from "./theme-toggle"
 import { AuthForm } from "./auth-form"
 import { LandingPage } from "./landing-page"
+import { MessageBuilder } from "./message-builder"
 import * as api from "@/lib/api"
 import type { Folder, Template } from "@/lib/types"
 
@@ -20,10 +21,13 @@ interface User {
   name: string
 }
 
+type TabType = "templates" | "builder"
+
 export function TemplatesApp() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [showAuth, setShowAuth] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabType>("templates")
 
   const [folders, setFolders] = useState<Folder[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
@@ -32,17 +36,14 @@ export function TemplatesApp() {
   const [searchQuery, setSearchQuery] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Editor state
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
 
-  // Folder dialog state
   const [folderDialogOpen, setFolderDialogOpen] = useState(false)
   const [folderDialogMode, setFolderDialogMode] = useState<"create" | "rename">("create")
   const [folderParentId, setFolderParentId] = useState<string | null>(null)
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null)
 
-  // Check for existing session
   useEffect(() => {
     const stored = localStorage.getItem("user")
     if (stored) {
@@ -55,7 +56,6 @@ export function TemplatesApp() {
     setLoading(false)
   }, [])
 
-  // Load data when user is logged in
   const loadData = useCallback(async () => {
     if (!user) return
 
@@ -203,7 +203,6 @@ export function TemplatesApp() {
 
   const renamingFolder = renamingFolderId ? folders.find((f) => f.id === renamingFolderId) : null
 
-  // Show loading state
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -212,7 +211,6 @@ export function TemplatesApp() {
     )
   }
 
-  // Show landing page or auth form if not logged in
   if (!user) {
     if (showAuth) {
       return <AuthForm onSuccess={setUser} onBack={() => setShowAuth(false)} />
@@ -222,23 +220,46 @@ export function TemplatesApp() {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
       <header className="h-14 border-b border-border flex items-center justify-between px-3 sm:px-4 shrink-0 gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden shrink-0"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+          {activeTab === "templates" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden shrink-0"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
           <h1 className="font-semibold text-base sm:text-lg text-foreground truncate">Шаблоны поддержки</h1>
+          <div className="hidden sm:flex items-center gap-1 ml-4 bg-muted rounded-lg p-1">
+            <Button
+              size="sm"
+              variant={activeTab === "templates" ? "default" : "ghost"}
+              onClick={() => setActiveTab("templates")}
+              className={activeTab === "templates" ? "bg-[#005bff] hover:bg-[#004ed6]" : ""}
+            >
+              <FileText className="h-4 w-4 mr-1.5" />
+              Шаблоны
+            </Button>
+            <Button
+              size="sm"
+              variant={activeTab === "builder" ? "default" : "ghost"}
+              onClick={() => setActiveTab("builder")}
+              className={activeTab === "builder" ? "bg-[#005bff] hover:bg-[#004ed6]" : ""}
+            >
+              <Layers className="h-4 w-4 mr-1.5" />
+              Конструктор
+            </Button>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-48 sm:w-64 hidden sm:block">
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          </div>
+          {activeTab === "templates" && (
+            <div className="w-48 sm:w-64 hidden sm:block">
+              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            </div>
+          )}
           <ThemeToggle />
           <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2 pl-1 sm:pl-2 border-l border-border">
             <span className="text-sm text-muted-foreground hidden md:inline truncate max-w-24">{user.name}</span>
@@ -249,62 +270,86 @@ export function TemplatesApp() {
         </div>
       </header>
 
-      {/* Mobile search */}
-      <div className="sm:hidden px-3 py-2 border-b border-border">
-        <SearchBar value={searchQuery} onChange={setSearchQuery} />
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Mobile overlay for sidebar */}
-        {sidebarOpen && (
-          <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-        )}
-
-        {/* Sidebar */}
-        <aside
-          className={`
-            fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
-            w-72 sm:w-64 border-r border-border bg-sidebar shrink-0 
-            transform transition-transform duration-200 ease-in-out
-            lg:transform-none lg:transition-none
-            ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-          `}
+      <div className="sm:hidden px-3 py-2 border-b border-border flex gap-2">
+        <Button
+          size="sm"
+          variant={activeTab === "templates" ? "default" : "outline"}
+          onClick={() => setActiveTab("templates")}
+          className={`flex-1 ${activeTab === "templates" ? "bg-[#005bff] hover:bg-[#004ed6]" : ""}`}
         >
-          {/* Mobile close button */}
-          <div className="lg:hidden flex items-center justify-between p-3 border-b border-border">
-            <span className="font-semibold text-sm text-foreground">Меню</span>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(false)}>
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          <FolderTree
-            folders={folders}
-            selectedFolderId={selectedFolderId}
-            expandedFolders={expandedFolders}
-            onSelectFolder={setSelectedFolderId}
-            onToggleFolder={handleToggleFolder}
-            onCreateFolder={handleCreateFolder}
-            onRenameFolder={handleRenameFolder}
-            onDeleteFolder={handleDeleteFolder}
-            onCloseSidebar={() => setSidebarOpen(false)}
-          />
-        </aside>
-
-        {/* Template list */}
-        <main className="flex-1 overflow-hidden">
-          <TemplateList
-            templates={searchQuery ? filteredTemplates : templates}
-            folders={folders}
-            selectedFolderId={searchQuery ? null : selectedFolderId}
-            onCreateTemplate={handleCreateTemplate}
-            onEditTemplate={handleEditTemplate}
-            onDeleteTemplate={handleDeleteTemplate}
-          />
-        </main>
+          <FileText className="h-4 w-4 mr-1.5" />
+          Шаблоны
+        </Button>
+        <Button
+          size="sm"
+          variant={activeTab === "builder" ? "default" : "outline"}
+          onClick={() => setActiveTab("builder")}
+          className={`flex-1 ${activeTab === "builder" ? "bg-[#005bff] hover:bg-[#004ed6]" : ""}`}
+        >
+          <Layers className="h-4 w-4 mr-1.5" />
+          Конструктор
+        </Button>
       </div>
 
-      {/* Template editor modal */}
+      {activeTab === "templates" && (
+        <div className="sm:hidden px-3 py-2 border-b border-border">
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        </div>
+      )}
+
+      <div className="flex-1 flex overflow-hidden relative">
+        {activeTab === "templates" ? (
+          <>
+            {sidebarOpen && (
+              <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+            )}
+
+            <aside
+              className={`
+                fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
+                w-72 sm:w-64 border-r border-border bg-sidebar shrink-0 
+                transform transition-transform duration-200 ease-in-out
+                lg:transform-none lg:transition-none
+                ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+              `}
+            >
+              <div className="lg:hidden flex items-center justify-between p-3 border-b border-border">
+                <span className="font-semibold text-sm text-foreground">Меню</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <FolderTree
+                folders={folders}
+                selectedFolderId={selectedFolderId}
+                expandedFolders={expandedFolders}
+                onSelectFolder={setSelectedFolderId}
+                onToggleFolder={handleToggleFolder}
+                onCreateFolder={handleCreateFolder}
+                onRenameFolder={handleRenameFolder}
+                onDeleteFolder={handleDeleteFolder}
+                onCloseSidebar={() => setSidebarOpen(false)}
+              />
+            </aside>
+
+            <main className="flex-1 overflow-hidden">
+              <TemplateList
+                templates={searchQuery ? filteredTemplates : templates}
+                folders={folders}
+                selectedFolderId={searchQuery ? null : selectedFolderId}
+                onCreateTemplate={handleCreateTemplate}
+                onEditTemplate={handleEditTemplate}
+                onDeleteTemplate={handleDeleteTemplate}
+              />
+            </main>
+          </>
+        ) : (
+          <main className="flex-1 overflow-hidden">
+            <MessageBuilder templates={templates} folders={folders} />
+          </main>
+        )}
+      </div>
+
       {editorOpen && (
         <TemplateEditor
           template={editingTemplate}
@@ -318,7 +363,6 @@ export function TemplatesApp() {
         />
       )}
 
-      {/* Folder dialog */}
       {folderDialogOpen && (
         <FolderDialog
           mode={folderDialogMode}
