@@ -325,6 +325,20 @@ export function TemplatesApp() {
           }}
         />
       )}
+
+      <footer className="h-10 border-t border-border flex items-center justify-center px-4 shrink-0 bg-muted/30">
+        <p className="text-xs text-muted-foreground">
+          Сделано для Ozon от{" "}
+          <a
+            href="https://t.me/ivanwakedev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-medium"
+          >
+            Ивана Тимофеева
+          </a>
+        </p>
+      </footer>
     </div>
   )
 }
