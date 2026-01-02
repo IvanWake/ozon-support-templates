@@ -10,6 +10,7 @@ import { FolderDialog } from "./folder-dialog"
 import { SearchBar } from "./search-bar"
 import { ThemeToggle } from "./theme-toggle"
 import { AuthForm } from "./auth-form"
+import { LandingPage } from "./landing-page"
 import * as api from "@/lib/api"
 import type { Folder, Template } from "@/lib/types"
 
@@ -22,6 +23,7 @@ interface User {
 export function TemplatesApp() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showAuth, setShowAuth] = useState(false)
 
   const [folders, setFolders] = useState<Folder[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
@@ -210,9 +212,12 @@ export function TemplatesApp() {
     )
   }
 
-  // Show auth form if not logged in
+  // Show landing page or auth form if not logged in
   if (!user) {
-    return <AuthForm onSuccess={setUser} />
+    if (showAuth) {
+      return <AuthForm onSuccess={setUser} onBack={() => setShowAuth(false)} />
+    }
+    return <LandingPage onGetStarted={() => setShowAuth(true)} />
   }
 
   return (
